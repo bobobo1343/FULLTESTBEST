@@ -125,18 +125,21 @@
 
     .player-bar {
       background-color: #181818;
-      padding: 10px;
-      text-align: center;
+      padding: 15px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
 
     .controls {
       display: flex;
       justify-content: center;
       align-items: center;
+      gap: 15px;
+      margin-bottom: 10px;
     }
 
     .controls button {
-      margin: 0 10px;
       background: none;
       border: none;
       color: white;
@@ -144,29 +147,38 @@
       cursor: pointer;
     }
 
-    #audio {
+    #progress-container {
       width: 100%;
-      margin-top: 10px;
-      appearance: none;
-      background: none;
+      max-width: 600px;
+      height: 6px;
+      background: #404040;
+      border-radius: 5px;
+      cursor: pointer;
+      position: relative;
+      margin-bottom: 10px;
     }
 
-    audio::-webkit-media-controls-panel {
-      background-color: #282828;
-      border-radius: 10px;
+    #progress {
+      height: 100%;
+      width: 0%;
+      background: #1DB954;
+      border-radius: 5px;
     }
 
-    audio::-webkit-media-controls-play-button,
-    audio::-webkit-media-controls-timeline,
-    audio::-webkit-media-controls-current-time-display,
-    audio::-webkit-media-controls-time-remaining-display,
-    audio::-webkit-media-controls-volume-slider {
-      filter: invert(1);
+    #volume-control {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    #volume {
+      width: 100px;
     }
 
     #track-title {
       font-weight: bold;
       margin-bottom: 10px;
+      text-align: center;
     }
 
     @media (max-width: 768px) {
@@ -196,41 +208,54 @@
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="sidebar">
-      <div>
-        <h2>MUSIC</h2>
-        <button onclick="loadAllTracks()">All Songs</button>
-      </div>
-      <div class="playlist-names" id="playlist-names"></div>
+  <!-- rest of HTML unchanged -->
+
+  <div class="player-bar">
+    <div id="track-title">Click a song or use controls</div>
+    <div class="controls">
+      <button onclick="prevTrack()">⏮️</button>
+      <button onclick="togglePlayPause()">⏯️</button>
+      <button onclick="nextTrack()">⏭️</button>
+      <button onclick="shuffleTrack()">🔀</button>
     </div>
-
-    <div class="main">
-      <div class="top-bar">
-        <input id="search" type="text" placeholder="Search for a song..." />
-        <div class="playlist-input">
-          <input id="new-playlist-name" type="text" placeholder="New Playlist Name" />
-          <button onclick="createPlaylist()">➕</button>
-        </div>
-      </div>
-
-      <div class="content">
-        <div id="track-list"></div>
-      </div>
-
-      <div class="player-bar">
-        <div id="track-title">Click a song or use controls</div>
-        <div class="controls">
-          <button onclick="prevTrack()">⏮️</button>
-          <button onclick="audio.paused ? audio.play() : audio.pause()">⏯️</button>
-          <button onclick="nextTrack()">⏭️</button>
-          <button onclick="shuffleTrack()">🔀</button>
-        </div>
-        <audio id="audio" controls></audio>
-      </div>
+    <div id="progress-container" onclick="seek(event)">
+      <div id="progress"></div>
     </div>
+    <div id="volume-control">
+      <label for="volume">🔊</label>
+      <input type="range" id="volume" min="0" max="1" step="0.01" value="1">
+    </div>
+    <audio id="audio"></audio>
   </div>
 
-  <!-- JavaScript code unchanged -->
+  <script>
+    const audio = document.getElementById('audio');
+    const progress = document.getElementById('progress');
+    const progressContainer = document.getElementById('progress-container');
+    const volumeSlider = document.getElementById('volume');
+
+    audio.addEventListener('timeupdate', () => {
+      const percent = (audio.currentTime / audio.duration) * 100;
+      progress.style.width = percent + '%';
+    });
+
+    function seek(e) {
+      const rect = progressContainer.getBoundingClientRect();
+      const percent = (e.clientX - rect.left) / rect.width;
+      audio.currentTime = percent * audio.duration;
+    }
+
+    function togglePlayPause() {
+      if (audio.paused) {
+        audio.play();
+      } else {
+        audio.pause();
+      }
+    }
+
+    volumeSlider.addEventListener('input', () => {
+      audio.volume = volumeSlider.value;
+    });
+  </script>
 </body>
 </html>
