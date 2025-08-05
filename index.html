@@ -1,205 +1,394 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Spotify Clone Player</title>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <meta charset="UTF-8" />
+  <title>MUSICMUSICMUSIC</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
       font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-      background-color: #000;
+      background-color: #121212;
       color: white;
+      display: flex;
       height: 100vh;
+      flex-direction: column;
+    }
+
+    .container {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+    }
+
+    .sidebar {
+      width: 240px;
+      background-color: #000;
+      padding: 20px;
       display: flex;
       flex-direction: column;
     }
-    .app { flex: 1; display: flex; }
-    .sidebar, .queue { width: 280px; background: #000; overflow-y: auto; padding: 20px; }
-    .main-content { flex: 1; display: flex; flex-direction: column; background: #121212; }
-    .header, .now-playing { padding: 20px; background: #181818; }
-    .header input, .playlist-input input { width: 100%; padding: 10px; background: #282828; border: none; color: white; border-radius: 20px; }
-    .playlist-input button { padding: 10px; background: #1DB954; border: none; border-radius: 20px; color: white; cursor: pointer; margin-top: 10px; }
-    .card { background: #181818; padding: 16px; border-radius: 8px; cursor: pointer; margin-bottom: 10px; }
-    .card:hover { background: #282828; }
-    .now-playing { display: flex; align-items: center; justify-content: space-between; }
-    .controls button { background: none; border: none; color: white; font-size: 24px; margin: 0 10px; cursor: pointer; }
-    .queue-item { margin-bottom: 10px; }
-    #login-btn, #logout-btn { background: #1DB954; color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; }
+
+    .sidebar h2 {
+      color: #1DB954;
+      margin-bottom: 20px;
+    }
+
+    .sidebar button {
+      background: none;
+      border: none;
+      color: #b3b3b3;
+      text-align: left;
+      padding: 8px 0;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .sidebar button:hover {
+      color: #fff;
+    }
+
+    .playlist-names {
+      margin-top: 20px;
+    }
+
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .top-bar {
+      padding: 10px;
+      background-color: #181818;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .top-bar input[type="text"] {
+      padding: 10px;
+      width: 100%;
+      max-width: 300px;
+      border-radius: 20px;
+      border: none;
+      background-color: #282828;
+      color: white;
+      margin: 5px 0;
+    }
+
+    .top-bar .playlist-input {
+      display: flex;
+      gap: 10px;
+    }
+
+    .content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px;
+    }
+
+    #track-list {
+      margin-top: 10px;
+    }
+
+    .track-item {
+      padding: 10px;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      border-bottom: 1px solid #282828;
+      justify-content: space-between;
+    }
+
+    .track-item:hover,
+    .track-item.active {
+      background-color: #282828;
+    }
+
+    .track-item span {
+      flex: 1;
+    }
+
+    .track-item button {
+      background: none;
+      border: none;
+      color: #1DB954;
+      font-size: 20px;
+      cursor: pointer;
+    }
+
+    .player-bar {
+      background-color: #181818;
+      padding: 10px;
+      text-align: center;
+    }
+
+    .controls button {
+      margin: 0 10px;
+      background: none;
+      border: none;
+      color: white;
+      font-size: 20px;
+      cursor: pointer;
+    }
+
+    #audio {
+      width: 100%;
+      margin-top: 10px;
+    }
+
+    #track-title {
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        flex-direction: column;
+      }
+
+      .sidebar {
+        width: 100%;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: space-between;
+      }
+
+      .main {
+        flex: 1;
+      }
+
+      .top-bar input {
+        width: 100%;
+      }
+
+      .playlist-names {
+        width: 100%;
+      }
+    }
   </style>
 </head>
 <body>
-  <div class="header">
-    <div id="auth-area">
-      <button id="login-btn">Sign in with Google</button>
-      <button id="logout-btn" style="display:none">Logout</button>
-    </div>
-  </div>
-  <div class="app">
+  <div class="container">
     <div class="sidebar">
-      <h2>Your Playlists</h2>
-      <div class="playlist-input">
-        <input id="new-playlist-name" placeholder="New Playlist Name" />
-        <button onclick="createPlaylist()">Create</button>
+      <div>
+        <h2>MUSIC</h2>
+        <button onclick="loadAllTracks()">All Songs</button>
       </div>
-      <div id="playlist-list"></div>
+      <div class="playlist-names" id="playlist-names"></div>
     </div>
-    <div class="main-content">
-      <div class="header">
-        <input id="search" placeholder="Search songs...">
+
+    <div class="main">
+      <div class="top-bar">
+        <input id="search" type="text" placeholder="Search for a song..." />
+        <div class="playlist-input">
+          <input id="new-playlist-name" type="text" placeholder="New Playlist Name" />
+          <button onclick="createPlaylist()">➕</button>
+        </div>
       </div>
-      <div id="track-list" style="padding: 20px;"></div>
-      <div class="now-playing">
-        <div id="track-title">Nothing Playing</div>
+
+      <div class="content">
+        <div id="track-list"></div>
+      </div>
+
+      <div class="player-bar">
+        <div id="track-title">Click a song or use controls</div>
         <div class="controls">
           <button onclick="prevTrack()">⏮️</button>
           <button onclick="nextTrack()">⏭️</button>
+          <button onclick="shuffleTrack()">🔀</button>
         </div>
+        <audio id="audio" controls></audio>
       </div>
-      <audio id="audio" controls style="width: 100%"></audio>
-    </div>
-    <div class="queue">
-      <h3>Queue</h3>
-      <div id="queue-list"></div>
     </div>
   </div>
+
   <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyDsYE91wH7UDwu8eZNbD1CFuVcilgYeZhI",
-      authDomain: "your-app.firebaseapp.com",
-      databaseURL: "https://your-app-default-rtdb.firebaseio.com",
-      projectId: "your-app",
-    };
-    firebase.initializeApp(firebaseConfig);
-
-    const auth = firebase.auth();
-    const db = firebase.database();
-
-    const loginBtn = document.getElementById("login-btn");
-    const logoutBtn = document.getElementById("logout-btn");
-    const authArea = document.getElementById("auth-area");
-    const trackListDiv = document.getElementById("track-list");
-    const playlistList = document.getElementById("playlist-list");
-    const audio = document.getElementById("audio");
-    const title = document.getElementById("track-title");
-
-    let user = null;
-    let tracks = [];
-    let currentTrack = 0;
-
     const folderId = '1DGz9zEQh29EAqTZpmWK5mwSj5HComnkn';
-    const apiKey = firebaseConfig.apiKey;
+    const apiKey = 'AIzaSyDsYE91wH7UDwu8eZNbD1CFuVcilgYeZhI';
 
-    function login() {
-      const provider = new firebase.auth.GoogleAuthProvider();
-      auth.signInWithPopup(provider);
-    }
+    const audio = document.getElementById('audio');
+    const title = document.getElementById('track-title');
+    const searchInput = document.getElementById('search');
+    const trackListDiv = document.getElementById('track-list');
+    const playlistNamesDiv = document.getElementById('playlist-names');
 
-    function logout() {
-      auth.signOut();
-    }
+    let tracks = [],
+        filteredTracks = [],
+        currentTrack = 0,
+        currentView = 'all',
+        playlists = JSON.parse(localStorage.getItem('playlists') || '{}');
 
-    loginBtn.onclick = login;
-    logoutBtn.onclick = logout;
-
-    auth.onAuthStateChanged(u => {
-      if (u) {
-        user = u;
-        loginBtn.style.display = 'none';
-        logoutBtn.style.display = 'inline-block';
-        loadAllTracks();
-        loadPlaylists();
-      } else {
-        user = null;
-        loginBtn.style.display = 'inline-block';
-        logoutBtn.style.display = 'none';
-        trackListDiv.innerHTML = '';
-        playlistList.innerHTML = '';
-      }
-    });
-
-    function loadPlaylists() {
-      const ref = db.ref(`users/${user.uid}/playlists`);
-      ref.on('value', snap => {
-        playlistList.innerHTML = '';
-        const data = snap.val() || {};
-        Object.keys(data).forEach(name => {
-          const btn = document.createElement('button');
-          btn.textContent = `${name} (${data[name].public ? 'Public' : 'Private'})`;
-          btn.onclick = () => {
-            tracks = data[name].tracks || [];
-            renderTracks();
-          };
-          const toggle = document.createElement('button');
-          toggle.textContent = 'Toggle';
-          toggle.onclick = () => {
-            db.ref(`users/${user.uid}/playlists/${name}/public`).set(!data[name].public);
-          };
-          const wrap = document.createElement('div');
-          wrap.appendChild(btn);
-          wrap.appendChild(toggle);
-          playlistList.appendChild(wrap);
-        });
-      });
+    function savePlaylists() {
+      localStorage.setItem('playlists', JSON.stringify(playlists));
+      renderPlaylistNames();
     }
 
     function createPlaylist() {
       const name = document.getElementById('new-playlist-name').value.trim();
-      if (!name || !user) return;
-      db.ref(`users/${user.uid}/playlists/${name}`).set({ public: false, tracks: [] });
-      document.getElementById('new-playlist-name').value = '';
+      if (name && !playlists[name]) {
+        playlists[name] = [];
+        savePlaylists();
+        document.getElementById('new-playlist-name').value = '';
+      }
     }
 
-    function renderTracks() {
-      trackListDiv.innerHTML = '';
-      tracks.forEach((track, i) => {
-        const div = document.createElement('div');
-        div.className = 'card';
-        div.textContent = track.name;
-        div.onclick = () => playTrack(i);
-        trackListDiv.appendChild(div);
+    function addToPlaylist(name, track) {
+      if (!playlists[name].some(t => t.id === track.id)) {
+        playlists[name].push(track);
+        savePlaylists();
+        alert(`Added to ${name}`);
+      }
+    }
+
+    function renderPlaylistNames() {
+      playlistNamesDiv.innerHTML = '';
+      Object.keys(playlists).forEach(name => {
+        const btn = document.createElement('button');
+        btn.textContent = name;
+        btn.onclick = () => {
+          filteredTracks = playlists[name];
+          currentView = name;
+          renderTrackList();
+        };
+        playlistNamesDiv.appendChild(btn);
       });
     }
 
     function playTrack(index) {
-      const track = tracks[index];
+      const track = filteredTracks[index];
+      if (!track) return;
       currentTrack = index;
+      const url = `https://www.googleapis.com/drive/v3/files/${track.id}?alt=media&key=${apiKey}`;
+      audio.src = url;
       title.textContent = track.name;
-      audio.src = `https://www.googleapis.com/drive/v3/files/${track.id}?alt=media&key=${apiKey}`;
-      audio.play();
+      highlightCurrentTrack();
+      audio.play().catch(() => {});
     }
 
     function nextTrack() {
-      currentTrack = (currentTrack + 1) % tracks.length;
+      currentTrack = (currentTrack + 1) % filteredTracks.length;
       playTrack(currentTrack);
     }
 
     function prevTrack() {
-      currentTrack = (currentTrack - 1 + tracks.length) % tracks.length;
+      currentTrack = (currentTrack - 1 + filteredTracks.length) % filteredTracks.length;
       playTrack(currentTrack);
     }
 
+    function shuffleTrack() {
+      const randomIndex = Math.floor(Math.random() * filteredTracks.length);
+      playTrack(randomIndex);
+    }
+
+    function highlightCurrentTrack() {
+      const items = document.querySelectorAll('.track-item');
+      items.forEach((el, i) => el.classList.toggle('active', i === currentTrack));
+    }
+
+    function renderTrackList() {
+      trackListDiv.innerHTML = '';
+      filteredTracks.forEach((track, index) => {
+        const div = document.createElement('div');
+        div.className = 'track-item';
+        div.innerHTML = `
+          <span>${track.name}</span>
+          ${
+            currentView !== 'all'
+              ? ''
+              : `<button onclick="showPlaylistMenu(event, ${index})">➕</button>`
+          }
+        `;
+        div.onclick = () => playTrack(index);
+        trackListDiv.appendChild(div);
+      });
+      highlightCurrentTrack();
+    }
+
+    function showPlaylistMenu(event, trackIndex) {
+      event.stopPropagation();
+      const menu = document.createElement('div');
+      menu.style.position = 'absolute';
+      menu.style.background = '#282828';
+      menu.style.border = '1px solid #444';
+      menu.style.padding = '5px';
+      menu.style.zIndex = 1000;
+
+      Object.keys(playlists).forEach(name => {
+        const item = document.createElement('div');
+        item.textContent = name;
+        item.style.padding = '5px';
+        item.style.cursor = 'pointer';
+        item.onclick = () => {
+          addToPlaylist(name, filteredTracks[trackIndex]);
+          document.body.removeChild(menu);
+        };
+        menu.appendChild(item);
+      });
+
+      menu.onmouseleave = () => document.body.removeChild(menu);
+      menu.style.left = `${event.pageX}px`;
+      menu.style.top = `${event.pageY}px`;
+      document.body.appendChild(menu);
+    }
+
     async function loadAllTracks() {
-      let pageToken = '', allFiles = [];
+      currentView = 'all';
+      let pageToken = '';
+      let allFiles = [];
+
       try {
         do {
-          const query = encodeURIComponent(`'${folderId}' in parents and (mimeType contains 'audio')`);
-          const url = `https://www.googleapis.com/drive/v3/files?q=${query}&fields=files(id,name),nextPageToken&pageSize=100&key=${apiKey}${pageToken ? `&pageToken=${pageToken}` : ''}`;
+          const query = encodeURIComponent(
+            `'${folderId}' in parents and (` +
+              `mimeType='audio/mpeg' or ` +
+              `mimeType='audio/mp4' or ` +
+              `mimeType='audio/x-wav' or ` +
+              `mimeType='audio/wav' or ` +
+              `mimeType='audio/aac' or ` +
+              `mimeType='audio/x-m4a')`
+          );
+          const url = `https://www.googleapis.com/drive/v3/files?q=${query}&fields=files(id,name),nextPageToken&pageSize=100&key=${apiKey}${
+            pageToken ? `&pageToken=${pageToken}` : ''
+          }`;
           const res = await fetch(url);
           const data = await res.json();
-          if (data.files) allFiles = allFiles.concat(data.files);
+
+          if (data.files) {
+            allFiles = allFiles.concat(data.files);
+          }
+
           pageToken = data.nextPageToken;
         } while (pageToken);
+
         allFiles.sort((a, b) => a.name.localeCompare(b.name));
         tracks = allFiles;
-        renderTracks();
+        filteredTracks = tracks;
+        renderTrackList();
       } catch (err) {
+        title.textContent = 'Failed to load tracks.';
         console.error(err);
       }
     }
+
+    searchInput.addEventListener('input', () => {
+      const query = searchInput.value.toLowerCase();
+      filteredTracks = (currentView === 'all' ? tracks : playlists[currentView]).filter(track =>
+        track.name.toLowerCase().includes(query)
+      );
+      renderTrackList();
+    });
+
+    audio.addEventListener('ended', nextTrack);
+
+    loadAllTracks();
+    renderPlaylistNames();
   </script>
 </body>
 </html>
