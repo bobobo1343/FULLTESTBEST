@@ -3,390 +3,263 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Spotify Style Music Player</title>
+  <title>Spotify Clone - Full Layout</title>
   <style>
     * {
       box-sizing: border-box;
     }
-
     body {
       margin: 0;
       font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-      background-color: #121212;
+      background-color: #000;
       color: white;
       display: flex;
       flex-direction: column;
       height: 100vh;
     }
-
-    .container {
-      flex: 1;
+    .app {
       display: flex;
-      overflow: hidden;
+      flex: 1;
     }
-
     .sidebar {
-      width: 240px;
+      width: 280px;
       background-color: #000;
       padding: 20px;
-      display: flex;
-      flex-direction: column;
+      overflow-y: auto;
     }
-
     .sidebar h2 {
-      color: #1DB954;
-      margin-bottom: 20px;
+      color: #fff;
+      font-size: 18px;
+      margin-bottom: 16px;
     }
-
-    .sidebar button {
-      background: none;
-      border: none;
-      color: #b3b3b3;
-      text-align: left;
+    .sidebar .library-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       padding: 8px 0;
-      font-size: 16px;
+      color: #b3b3b3;
+      font-size: 14px;
       cursor: pointer;
     }
-
-    .sidebar button:hover {
+    .sidebar .library-item:hover {
       color: #fff;
     }
-
-    .main {
+    .main-content {
       flex: 1;
       display: flex;
       flex-direction: column;
-    }
-
-    .top-bar {
-      padding: 10px;
-      background-color: #181818;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-
-    .top-bar input {
-      padding: 10px;
-      width: 300px;
-      border-radius: 20px;
-      border: none;
-      background-color: #282828;
-      color: white;
-    }
-
-    .playlist-input {
-      display: flex;
-      gap: 10px;
-    }
-
-    .playlist-input input {
-      padding: 10px;
-      border-radius: 20px;
-      border: none;
-      background-color: #282828;
-      color: white;
-    }
-
-    .playlist-input button {
-      padding: 10px;
-      background: #1DB954;
-      border: none;
-      border-radius: 20px;
-      color: white;
-      cursor: pointer;
-    }
-
-    .content {
-      flex: 1;
+      background-color: #121212;
       overflow-y: auto;
+    }
+    .header {
+      background-color: #121212;
       padding: 20px;
-    }
-
-    #track-list {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .track-item {
-      background: #181818;
-      padding: 12px 16px;
-      border-radius: 8px;
       display: flex;
       justify-content: space-between;
       align-items: center;
+    }
+    .header input {
+      background: #242424;
+      border: none;
+      border-radius: 20px;
+      padding: 10px 20px;
+      color: white;
+      width: 300px;
+    }
+    .sections {
+      padding: 0 20px 20px 20px;
+    }
+    .section {
+      margin-bottom: 32px;
+    }
+    .section h3 {
+      font-size: 20px;
+      margin-bottom: 16px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 16px;
+    }
+    .card {
+      background-color: #181818;
+      padding: 16px;
+      border-radius: 8px;
+      cursor: pointer;
       transition: background 0.3s;
-      position: relative;
     }
-
-    .track-item:hover {
-      background: #282828;
+    .card:hover {
+      background-color: #282828;
     }
-
-    .track-name {
-      flex: 1;
+    .card img {
+      width: 100%;
+      border-radius: 4px;
+      margin-bottom: 10px;
     }
-
-    .play-btn {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      background-color: #1DB954;
+    .card .title {
+      font-weight: bold;
+      margin-bottom: 6px;
+    }
+    .card .subtitle {
+      font-size: 12px;
+      color: #b3b3b3;
+    }
+    .now-playing {
+      background-color: #181818;
       display: flex;
       align-items: center;
-      justify-content: center;
-      opacity: 0;
-      transform: scale(0.8);
-      transition: opacity 0.3s, transform 0.3s;
+      justify-content: space-between;
+      padding: 10px 20px;
+      border-top: 1px solid #282828;
     }
-
-    .track-item:hover .play-btn {
-      opacity: 1;
-      transform: scale(1);
+    .now-playing .track-info {
+      display: flex;
+      align-items: center;
     }
-
-    .play-icon {
-      width: 0;
-      height: 0;
-      border-left: 12px solid white;
-      border-top: 8px solid transparent;
-      border-bottom: 8px solid transparent;
+    .now-playing .track-info img {
+      width: 56px;
+      height: 56px;
+      border-radius: 4px;
+      margin-right: 12px;
     }
-
-    .player-bar {
-      background-color: #181818;
-      padding: 20px;
+    .now-playing .track-info .info {
       display: flex;
       flex-direction: column;
+    }
+    .now-playing .track-info .info .title {
+      font-weight: bold;
+      font-size: 14px;
+    }
+    .now-playing .track-info .info .artist {
+      font-size: 12px;
+      color: #b3b3b3;
+    }
+    .now-playing .controls {
+      display: flex;
       align-items: center;
     }
-
-    .controls button {
-      margin: 0 10px;
+    .now-playing .controls button {
       background: none;
       border: none;
       color: white;
-      font-size: 24px;
+      font-size: 20px;
+      margin: 0 8px;
       cursor: pointer;
     }
-
-    #audio {
+    .now-playing .progress {
+      flex: 1;
+      margin: 0 20px;
+      display: flex;
+      align-items: center;
+    }
+    .now-playing .progress input[type="range"] {
       width: 100%;
-      margin-top: 10px;
     }
-
-    #track-title {
-      font-weight: bold;
-      margin-bottom: 10px;
+    .queue {
+      background-color: #121212;
+      padding: 20px;
+      border-left: 1px solid #282828;
+      width: 300px;
+      overflow-y: auto;
     }
-
-    .playlist-section {
-      margin-top: 20px;
+    .queue h3 {
+      font-size: 18px;
+      margin-bottom: 16px;
     }
-
-    .queue-section {
-      margin-top: 20px;
+    .queue-item {
+      display: flex;
+      align-items: center;
+      padding: 8px 0;
     }
-
-    .queue-track {
-      padding: 6px;
+    .queue-item img {
+      width: 40px;
+      height: 40px;
+      border-radius: 4px;
+      margin-right: 10px;
+    }
+    .queue-item .info {
+      display: flex;
+      flex-direction: column;
+    }
+    .queue-item .info .title {
       font-size: 14px;
+    }
+    .queue-item .info .artist {
+      font-size: 12px;
       color: #b3b3b3;
     }
-
     @media (max-width: 768px) {
-      .container {
-        flex-direction: column;
-      }
-
-      .sidebar {
-        width: 100%;
-        flex-direction: row;
-        flex-wrap: wrap;
+      .sidebar, .queue {
+        display: none;
       }
     }
   </style>
 </head>
 <body>
-  <div class="container">
+  <div class="app">
     <div class="sidebar">
-      <h2>Spotify Clone</h2>
-      <div class="playlist-section" id="playlist-section"></div>
+      <h2>Your Library</h2>
+      <div class="library-item">Liked Songs</div>
+      <div class="library-item">Local Files</div>
+      <div class="library-item">Playlists</div>
+      <div class="library-item">Artists</div>
+      <div class="library-item">Albums</div>
     </div>
-    <div class="main">
-      <div class="top-bar">
-        <input id="search" type="text" placeholder="Search for a song..." />
-        <div class="playlist-input">
-          <input id="new-playlist-name" type="text" placeholder="New Playlist Name" />
-          <button onclick="createPlaylist()">Add Playlist</button>
+    <div class="main-content">
+      <div class="header">
+        <input type="text" placeholder="What do you want to play?" />
+      </div>
+      <div class="sections">
+        <div class="section">
+          <h3>Made For You</h3>
+          <div class="grid">
+            <div class="card">
+              <img src="https://i.scdn.co/image/ab67616d0000b273dc3bbfbf97b0b477ff3be6e7" alt="mix">
+              <div class="title">Daily Mix</div>
+              <div class="subtitle">Your shortcut to hidden gems</div>
+            </div>
+            <!-- Add more cards as needed -->
+          </div>
+        </div>
+        <div class="section">
+          <h3>Your Top Mixes</h3>
+          <div class="grid">
+            <div class="card">
+              <img src="https://i.scdn.co/image/ab67616d0000b2738d25557ac2f45b7c96a3e347" alt="mix">
+              <div class="title">Hip Hop Mix</div>
+              <div class="subtitle">Kanye, Carti, Ken Carson</div>
+            </div>
+          </div>
         </div>
       </div>
-      <div class="content">
-        <div id="track-list"></div>
-        <div class="queue-section">
-          <h3>Queue</h3>
-          <div id="queue-list"></div>
+      <div class="now-playing">
+        <div class="track-info">
+          <img src="https://i.scdn.co/image/ab67616d0000b273e099bf8f74b5cb479d943191" alt="cover">
+          <div class="info">
+            <div class="title">Vamped</div>
+            <div class="artist">Destroy Lonely</div>
+          </div>
         </div>
-      </div>
-      <div class="player-bar">
-        <div id="track-title">Nothing playing</div>
         <div class="controls">
-          <button onclick="prevTrack()">⏮️</button>
-          <button onclick="nextTrack()">⏭️</button>
-          <button onclick="shuffleTrack()">🔀</button>
+          <button>⏮️</button>
+          <button>▶️</button>
+          <button>⏭️</button>
         </div>
-        <audio id="audio" controls></audio>
+        <div class="progress">
+          <input type="range" min="0" max="100" value="11" />
+        </div>
+      </div>
+    </div>
+    <div class="queue">
+      <h3>Next in queue</h3>
+      <div class="queue-item">
+        <img src="https://i.scdn.co/image/ab67616d0000b2737e25ffef89b7cba2bdfc5fe3" alt="queue">
+        <div class="info">
+          <div class="title">glock_19</div>
+          <div class="artist">Ken Carson</div>
+        </div>
       </div>
     </div>
   </div>
-
-  <script>
-    const folderId = '1DGz9zEQh29EAqTZpmWK5mwSj5HComnkn';
-    const apiKey = 'AIzaSyDsYE91wH7UDwu8eZNbD1CFuVcilgYeZhI';
-
-    const audio = document.getElementById('audio');
-    const title = document.getElementById('track-title');
-    const searchInput = document.getElementById('search');
-    const trackListDiv = document.getElementById('track-list');
-    const playlistSection = document.getElementById('playlist-section');
-    const queueList = document.getElementById('queue-list');
-
-    let tracks = [], filteredTracks = [], currentTrack = 0, playlists = {}, queue = [];
-
-    function playTrack(index) {
-      const track = filteredTracks[index];
-      if (!track) return;
-      currentTrack = index;
-      const url = `https://www.googleapis.com/drive/v3/files/${track.id}?alt=media&key=${apiKey}`;
-      audio.src = url;
-      title.textContent = track.name;
-      highlightCurrentTrack();
-      audio.play().catch(() => {});
-    }
-
-    function nextTrack() {
-      if (queue.length > 0) {
-        const next = queue.shift();
-        playById(next);
-        updateQueueDisplay();
-      } else {
-        currentTrack = (currentTrack + 1) % filteredTracks.length;
-        playTrack(currentTrack);
-      }
-    }
-
-    function prevTrack() {
-      currentTrack = (currentTrack - 1 + filteredTracks.length) % filteredTracks.length;
-      playTrack(currentTrack);
-    }
-
-    function shuffleTrack() {
-      const randomIndex = Math.floor(Math.random() * filteredTracks.length);
-      playTrack(randomIndex);
-    }
-
-    function highlightCurrentTrack() {
-      const items = document.querySelectorAll('.track-item');
-      items.forEach((el, i) => el.classList.toggle('active', i === currentTrack));
-    }
-
-    function renderTrackList() {
-      trackListDiv.innerHTML = '';
-      filteredTracks.forEach((track, index) => {
-        const div = document.createElement('div');
-        div.className = 'track-item';
-        div.innerHTML = `
-          <div class="track-name">${track.name}</div>
-          <div class="play-btn" onclick="playTrack(${index}); event.stopPropagation();">
-            <div class="play-icon"></div>
-          </div>
-        `;
-        div.onclick = () => playTrack(index);
-        trackListDiv.appendChild(div);
-      });
-      highlightCurrentTrack();
-    }
-
-    function createPlaylist() {
-      const name = document.getElementById('new-playlist-name').value.trim();
-      if (name && !playlists[name]) {
-        playlists[name] = [];
-        renderPlaylists();
-        document.getElementById('new-playlist-name').value = '';
-      }
-    }
-
-    function renderPlaylists() {
-      playlistSection.innerHTML = '';
-      Object.keys(playlists).forEach(name => {
-        const btn = document.createElement('button');
-        btn.textContent = name;
-        btn.onclick = () => {
-          filteredTracks = playlists[name];
-          renderTrackList();
-        };
-        playlistSection.appendChild(btn);
-      });
-    }
-
-    function addToQueue(track) {
-      queue.push(track);
-      updateQueueDisplay();
-    }
-
-    function updateQueueDisplay() {
-      queueList.innerHTML = '';
-      queue.forEach(track => {
-        const div = document.createElement('div');
-        div.className = 'queue-track';
-        div.textContent = track.name;
-        queueList.appendChild(div);
-      });
-    }
-
-    function playById(track) {
-      const url = `https://www.googleapis.com/drive/v3/files/${track.id}?alt=media&key=${apiKey}`;
-      audio.src = url;
-      title.textContent = track.name;
-      audio.play().catch(() => {});
-    }
-
-    async function loadAllTracks() {
-      let pageToken = '', allFiles = [];
-      try {
-        do {
-          const query = encodeURIComponent(
-            `'${folderId}' in parents and (` +
-            `mimeType='audio/mpeg' or mimeType='audio/mp4' or mimeType='audio/x-wav' or ` +
-            `mimeType='audio/wav' or mimeType='audio/aac' or mimeType='audio/x-m4a')`
-          );
-          const url = `https://www.googleapis.com/drive/v3/files?q=${query}&fields=files(id,name),nextPageToken&pageSize=100&key=${apiKey}${pageToken ? `&pageToken=${pageToken}` : ''}`;
-          const res = await fetch(url);
-          const data = await res.json();
-          if (data.files) allFiles = allFiles.concat(data.files);
-          pageToken = data.nextPageToken;
-        } while (pageToken);
-
-        allFiles.sort((a, b) => a.name.localeCompare(b.name));
-        tracks = allFiles;
-        filteredTracks = tracks;
-        renderTrackList();
-      } catch (err) {
-        title.textContent = 'Failed to load tracks.';
-        console.error(err);
-      }
-    }
-
-    searchInput.addEventListener('input', () => {
-      const query = searchInput.value.toLowerCase();
-      filteredTracks = tracks.filter(track => track.name.toLowerCase().includes(query));
-      renderTrackList();
-    });
-
-    audio.addEventListener('ended', nextTrack);
-    loadAllTracks();
-  </script>
 </body>
 </html>
