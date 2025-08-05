@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+add those features to this script <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -123,21 +123,6 @@
       cursor: pointer;
     }
 
-    .track-item input[type="checkbox"] {
-      margin-right: 10px;
-    }
-
-    .multi-select-bar {
-      display: none;
-      padding: 10px;
-      background-color: #222;
-      text-align: right;
-    }
-
-    .multi-select-bar.show {
-      display: block;
-    }
-
     .player-bar {
       background-color: #181818;
       padding: 10px;
@@ -208,10 +193,6 @@
         </div>
       </div>
 
-      <div class="multi-select-bar" id="multiSelectBar">
-        <button onclick="addSelectedToPlaylist()">Add Selected to Playlist</button>
-      </div>
-
       <div class="content">
         <div id="track-list"></div>
       </div>
@@ -229,32 +210,86 @@
   </div>
 
   <script>
-    // Add to existing JavaScript
-    let selectedTrackIndices = new Set();
+    const folderId = '1DGz9zEQh29EAqTZpmWK5mwSj5HComnkn';
+    const apiKey = 'AIzaSyDsYE91wH7UDwu8eZNbD1CFuVcilgYeZhI';
 
-    function toggleTrackSelection(index) {
-      if (selectedTrackIndices.has(index)) {
-        selectedTrackIndices.delete(index);
-      } else {
-        selectedTrackIndices.add(index);
-      }
-      document.getElementById('multiSelectBar').classList.toggle('show', selectedTrackIndices.size > 0);
+    const audio = document.getElementById('audio');
+    const title = document.getElementById('track-title');
+    const searchInput = document.getElementById('search');
+    const trackListDiv = document.getElementById('track-list');
+    const playlistNamesDiv = document.getElementById('playlist-names');
+
+    let tracks = [],
+        filteredTracks = [],
+        currentTrack = 0,
+        currentView = 'all',
+        playlists = JSON.parse(localStorage.getItem('playlists') || '{}');
+
+    function savePlaylists() {
+      localStorage.setItem('playlists', JSON.stringify(playlists));
+      renderPlaylistNames();
     }
 
-    function addSelectedToPlaylist() {
-      const name = prompt('Enter playlist name:');
-      if (name && playlists[name]) {
-        selectedTrackIndices.forEach(index => {
-          const track = filteredTracks[index];
-          if (!playlists[name].some(t => t.id === track.id)) {
-            playlists[name].push(track);
-          }
-        });
+    function createPlaylist() {
+      const name = document.getElementById('new-playlist-name').value.trim();
+      if (name && !playlists[name]) {
+        playlists[name] = [];
         savePlaylists();
-        selectedTrackIndices.clear();
-        document.getElementById('multiSelectBar').classList.remove('show');
-        alert(`Tracks added to ${name}`);
+        document.getElementById('new-playlist-name').value = '';
       }
+    }
+
+    function addToPlaylist(name, track) {
+      if (!playlists[name].some(t => t.id === track.id)) {
+        playlists[name].push(track);
+        savePlaylists();
+        alert(`Added to ${name}`);
+      }
+    }
+
+    function renderPlaylistNames() {
+      playlistNamesDiv.innerHTML = '';
+      Object.keys(playlists).forEach(name => {
+        const btn = document.createElement('button');
+        btn.textContent = name;
+        btn.onclick = () => {
+          filteredTracks = playlists[name];
+          currentView = name;
+          renderTrackList();
+        };
+        playlistNamesDiv.appendChild(btn);
+      });
+    }
+
+    function playTrack(index) {
+      const track = filteredTracks[index];
+      if (!track) return;
+      currentTrack = index;
+      const url = `https://www.googleapis.com/drive/v3/files/${track.id}?alt=media&key=${apiKey}`;
+      audio.src = url;
+      title.textContent = track.name;
+      highlightCurrentTrack();
+      audio.play().catch(() => {});
+    }
+
+    function nextTrack() {
+      currentTrack = (currentTrack + 1) % filteredTracks.length;
+      playTrack(currentTrack);
+    }
+
+    function prevTrack() {
+      currentTrack = (currentTrack - 1 + filteredTracks.length) % filteredTracks.length;
+      playTrack(currentTrack);
+    }
+
+    function shuffleTrack() {
+      const randomIndex = Math.floor(Math.random() * filteredTracks.length);
+      playTrack(randomIndex);
+    }
+
+    function highlightCurrentTrack() {
+      const items = document.querySelectorAll('.track-item');
+      items.forEach((el, i) => el.classList.toggle('active', i === currentTrack));
     }
 
     function renderTrackList() {
@@ -263,7 +298,6 @@
         const div = document.createElement('div');
         div.className = 'track-item';
         div.innerHTML = `
-          <input type="checkbox" onchange="toggleTrackSelection(${index})" />
           <span>${track.name}</span>
           ${
             currentView !== 'all'
@@ -276,6 +310,85 @@
       });
       highlightCurrentTrack();
     }
+
+    function showPlaylistMenu(event, trackIndex) {
+      event.stopPropagation();
+      const menu = document.createElement('div');
+      menu.style.position = 'absolute';
+      menu.style.background = '#282828';
+      menu.style.border = '1px solid #444';
+      menu.style.padding = '5px';
+      menu.style.zIndex = 1000;
+
+      Object.keys(playlists).forEach(name => {
+        const item = document.createElement('div');
+        item.textContent = name;
+        item.style.padding = '5px';
+        item.style.cursor = 'pointer';
+        item.onclick = () => {
+          addToPlaylist(name, filteredTracks[trackIndex]);
+          document.body.removeChild(menu);
+        };
+        menu.appendChild(item);
+      });
+
+      menu.onmouseleave = () => document.body.removeChild(menu);
+      menu.style.left = `${event.pageX}px`;
+      menu.style.top = `${event.pageY}px`;
+      document.body.appendChild(menu);
+    }
+
+    async function loadAllTracks() {
+      currentView = 'all';
+      let pageToken = '';
+      let allFiles = [];
+
+      try {
+        do {
+          const query = encodeURIComponent(
+            `'${folderId}' in parents and (` +
+              `mimeType='audio/mpeg' or ` +
+              `mimeType='audio/mp4' or ` +
+              `mimeType='audio/x-wav' or ` +
+              `mimeType='audio/wav' or ` +
+              `mimeType='audio/aac' or ` +
+              `mimeType='audio/x-m4a')`
+          );
+          const url = `https://www.googleapis.com/drive/v3/files?q=${query}&fields=files(id,name),nextPageToken&pageSize=100&key=${apiKey}${
+            pageToken ? `&pageToken=${pageToken}` : ''
+          }`;
+          const res = await fetch(url);
+          const data = await res.json();
+
+          if (data.files) {
+            allFiles = allFiles.concat(data.files);
+          }
+
+          pageToken = data.nextPageToken;
+        } while (pageToken);
+
+        allFiles.sort((a, b) => a.name.localeCompare(b.name));
+        tracks = allFiles;
+        filteredTracks = tracks;
+        renderTrackList();
+      } catch (err) {
+        title.textContent = 'Failed to load tracks.';
+        console.error(err);
+      }
+    }
+
+    searchInput.addEventListener('input', () => {
+      const query = searchInput.value.toLowerCase();
+      filteredTracks = (currentView === 'all' ? tracks : playlists[currentView]).filter(track =>
+        track.name.toLowerCase().includes(query)
+      );
+      renderTrackList();
+    });
+
+    audio.addEventListener('ended', nextTrack);
+
+    loadAllTracks();
+    renderPlaylistNames();
   </script>
 </body>
-</html>
+</html> 
