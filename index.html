@@ -1,265 +1,205 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Spotify Clone - Full Layout</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spotify Clone Player</title>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
   <style>
-    * {
-      box-sizing: border-box;
-    }
     body {
       margin: 0;
       font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
       background-color: #000;
       color: white;
-      display: flex;
-      flex-direction: column;
       height: 100vh;
-    }
-    .app {
-      display: flex;
-      flex: 1;
-    }
-    .sidebar {
-      width: 280px;
-      background-color: #000;
-      padding: 20px;
-      overflow-y: auto;
-    }
-    .sidebar h2 {
-      color: #fff;
-      font-size: 18px;
-      margin-bottom: 16px;
-    }
-    .sidebar .library-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 8px 0;
-      color: #b3b3b3;
-      font-size: 14px;
-      cursor: pointer;
-    }
-    .sidebar .library-item:hover {
-      color: #fff;
-    }
-    .main-content {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      background-color: #121212;
-      overflow-y: auto;
-    }
-    .header {
-      background-color: #121212;
-      padding: 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .header input {
-      background: #242424;
-      border: none;
-      border-radius: 20px;
-      padding: 10px 20px;
-      color: white;
-      width: 300px;
-    }
-    .sections {
-      padding: 0 20px 20px 20px;
-    }
-    .section {
-      margin-bottom: 32px;
-    }
-    .section h3 {
-      font-size: 20px;
-      margin-bottom: 16px;
-    }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-      gap: 16px;
-    }
-    .card {
-      background-color: #181818;
-      padding: 16px;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-    .card:hover {
-      background-color: #282828;
-    }
-    .card img {
-      width: 100%;
-      border-radius: 4px;
-      margin-bottom: 10px;
-    }
-    .card .title {
-      font-weight: bold;
-      margin-bottom: 6px;
-    }
-    .card .subtitle {
-      font-size: 12px;
-      color: #b3b3b3;
-    }
-    .now-playing {
-      background-color: #181818;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 10px 20px;
-      border-top: 1px solid #282828;
-    }
-    .now-playing .track-info {
-      display: flex;
-      align-items: center;
-    }
-    .now-playing .track-info img {
-      width: 56px;
-      height: 56px;
-      border-radius: 4px;
-      margin-right: 12px;
-    }
-    .now-playing .track-info .info {
       display: flex;
       flex-direction: column;
     }
-    .now-playing .track-info .info .title {
-      font-weight: bold;
-      font-size: 14px;
-    }
-    .now-playing .track-info .info .artist {
-      font-size: 12px;
-      color: #b3b3b3;
-    }
-    .now-playing .controls {
-      display: flex;
-      align-items: center;
-    }
-    .now-playing .controls button {
-      background: none;
-      border: none;
-      color: white;
-      font-size: 20px;
-      margin: 0 8px;
-      cursor: pointer;
-    }
-    .now-playing .progress {
-      flex: 1;
-      margin: 0 20px;
-      display: flex;
-      align-items: center;
-    }
-    .now-playing .progress input[type="range"] {
-      width: 100%;
-    }
-    .queue {
-      background-color: #121212;
-      padding: 20px;
-      border-left: 1px solid #282828;
-      width: 300px;
-      overflow-y: auto;
-    }
-    .queue h3 {
-      font-size: 18px;
-      margin-bottom: 16px;
-    }
-    .queue-item {
-      display: flex;
-      align-items: center;
-      padding: 8px 0;
-    }
-    .queue-item img {
-      width: 40px;
-      height: 40px;
-      border-radius: 4px;
-      margin-right: 10px;
-    }
-    .queue-item .info {
-      display: flex;
-      flex-direction: column;
-    }
-    .queue-item .info .title {
-      font-size: 14px;
-    }
-    .queue-item .info .artist {
-      font-size: 12px;
-      color: #b3b3b3;
-    }
-    @media (max-width: 768px) {
-      .sidebar, .queue {
-        display: none;
-      }
-    }
+    .app { flex: 1; display: flex; }
+    .sidebar, .queue { width: 280px; background: #000; overflow-y: auto; padding: 20px; }
+    .main-content { flex: 1; display: flex; flex-direction: column; background: #121212; }
+    .header, .now-playing { padding: 20px; background: #181818; }
+    .header input, .playlist-input input { width: 100%; padding: 10px; background: #282828; border: none; color: white; border-radius: 20px; }
+    .playlist-input button { padding: 10px; background: #1DB954; border: none; border-radius: 20px; color: white; cursor: pointer; margin-top: 10px; }
+    .card { background: #181818; padding: 16px; border-radius: 8px; cursor: pointer; margin-bottom: 10px; }
+    .card:hover { background: #282828; }
+    .now-playing { display: flex; align-items: center; justify-content: space-between; }
+    .controls button { background: none; border: none; color: white; font-size: 24px; margin: 0 10px; cursor: pointer; }
+    .queue-item { margin-bottom: 10px; }
+    #login-btn, #logout-btn { background: #1DB954; color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; }
   </style>
 </head>
 <body>
+  <div class="header">
+    <div id="auth-area">
+      <button id="login-btn">Sign in with Google</button>
+      <button id="logout-btn" style="display:none">Logout</button>
+    </div>
+  </div>
   <div class="app">
     <div class="sidebar">
-      <h2>Your Library</h2>
-      <div class="library-item">Liked Songs</div>
-      <div class="library-item">Local Files</div>
-      <div class="library-item">Playlists</div>
-      <div class="library-item">Artists</div>
-      <div class="library-item">Albums</div>
+      <h2>Your Playlists</h2>
+      <div class="playlist-input">
+        <input id="new-playlist-name" placeholder="New Playlist Name" />
+        <button onclick="createPlaylist()">Create</button>
+      </div>
+      <div id="playlist-list"></div>
     </div>
     <div class="main-content">
       <div class="header">
-        <input type="text" placeholder="What do you want to play?" />
+        <input id="search" placeholder="Search songs...">
       </div>
-      <div class="sections">
-        <div class="section">
-          <h3>Made For You</h3>
-          <div class="grid">
-            <div class="card">
-              <img src="https://i.scdn.co/image/ab67616d0000b273dc3bbfbf97b0b477ff3be6e7" alt="mix">
-              <div class="title">Daily Mix</div>
-              <div class="subtitle">Your shortcut to hidden gems</div>
-            </div>
-            <!-- Add more cards as needed -->
-          </div>
-        </div>
-        <div class="section">
-          <h3>Your Top Mixes</h3>
-          <div class="grid">
-            <div class="card">
-              <img src="https://i.scdn.co/image/ab67616d0000b2738d25557ac2f45b7c96a3e347" alt="mix">
-              <div class="title">Hip Hop Mix</div>
-              <div class="subtitle">Kanye, Carti, Ken Carson</div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <div id="track-list" style="padding: 20px;"></div>
       <div class="now-playing">
-        <div class="track-info">
-          <img src="https://i.scdn.co/image/ab67616d0000b273e099bf8f74b5cb479d943191" alt="cover">
-          <div class="info">
-            <div class="title">Vamped</div>
-            <div class="artist">Destroy Lonely</div>
-          </div>
-        </div>
+        <div id="track-title">Nothing Playing</div>
         <div class="controls">
-          <button>⏮️</button>
-          <button>▶️</button>
-          <button>⏭️</button>
-        </div>
-        <div class="progress">
-          <input type="range" min="0" max="100" value="11" />
+          <button onclick="prevTrack()">⏮️</button>
+          <button onclick="nextTrack()">⏭️</button>
         </div>
       </div>
+      <audio id="audio" controls style="width: 100%"></audio>
     </div>
     <div class="queue">
-      <h3>Next in queue</h3>
-      <div class="queue-item">
-        <img src="https://i.scdn.co/image/ab67616d0000b2737e25ffef89b7cba2bdfc5fe3" alt="queue">
-        <div class="info">
-          <div class="title">glock_19</div>
-          <div class="artist">Ken Carson</div>
-        </div>
-      </div>
+      <h3>Queue</h3>
+      <div id="queue-list"></div>
     </div>
   </div>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDsYE91wH7UDwu8eZNbD1CFuVcilgYeZhI",
+      authDomain: "your-app.firebaseapp.com",
+      databaseURL: "https://your-app-default-rtdb.firebaseio.com",
+      projectId: "your-app",
+    };
+    firebase.initializeApp(firebaseConfig);
+
+    const auth = firebase.auth();
+    const db = firebase.database();
+
+    const loginBtn = document.getElementById("login-btn");
+    const logoutBtn = document.getElementById("logout-btn");
+    const authArea = document.getElementById("auth-area");
+    const trackListDiv = document.getElementById("track-list");
+    const playlistList = document.getElementById("playlist-list");
+    const audio = document.getElementById("audio");
+    const title = document.getElementById("track-title");
+
+    let user = null;
+    let tracks = [];
+    let currentTrack = 0;
+
+    const folderId = '1DGz9zEQh29EAqTZpmWK5mwSj5HComnkn';
+    const apiKey = firebaseConfig.apiKey;
+
+    function login() {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      auth.signInWithPopup(provider);
+    }
+
+    function logout() {
+      auth.signOut();
+    }
+
+    loginBtn.onclick = login;
+    logoutBtn.onclick = logout;
+
+    auth.onAuthStateChanged(u => {
+      if (u) {
+        user = u;
+        loginBtn.style.display = 'none';
+        logoutBtn.style.display = 'inline-block';
+        loadAllTracks();
+        loadPlaylists();
+      } else {
+        user = null;
+        loginBtn.style.display = 'inline-block';
+        logoutBtn.style.display = 'none';
+        trackListDiv.innerHTML = '';
+        playlistList.innerHTML = '';
+      }
+    });
+
+    function loadPlaylists() {
+      const ref = db.ref(`users/${user.uid}/playlists`);
+      ref.on('value', snap => {
+        playlistList.innerHTML = '';
+        const data = snap.val() || {};
+        Object.keys(data).forEach(name => {
+          const btn = document.createElement('button');
+          btn.textContent = `${name} (${data[name].public ? 'Public' : 'Private'})`;
+          btn.onclick = () => {
+            tracks = data[name].tracks || [];
+            renderTracks();
+          };
+          const toggle = document.createElement('button');
+          toggle.textContent = 'Toggle';
+          toggle.onclick = () => {
+            db.ref(`users/${user.uid}/playlists/${name}/public`).set(!data[name].public);
+          };
+          const wrap = document.createElement('div');
+          wrap.appendChild(btn);
+          wrap.appendChild(toggle);
+          playlistList.appendChild(wrap);
+        });
+      });
+    }
+
+    function createPlaylist() {
+      const name = document.getElementById('new-playlist-name').value.trim();
+      if (!name || !user) return;
+      db.ref(`users/${user.uid}/playlists/${name}`).set({ public: false, tracks: [] });
+      document.getElementById('new-playlist-name').value = '';
+    }
+
+    function renderTracks() {
+      trackListDiv.innerHTML = '';
+      tracks.forEach((track, i) => {
+        const div = document.createElement('div');
+        div.className = 'card';
+        div.textContent = track.name;
+        div.onclick = () => playTrack(i);
+        trackListDiv.appendChild(div);
+      });
+    }
+
+    function playTrack(index) {
+      const track = tracks[index];
+      currentTrack = index;
+      title.textContent = track.name;
+      audio.src = `https://www.googleapis.com/drive/v3/files/${track.id}?alt=media&key=${apiKey}`;
+      audio.play();
+    }
+
+    function nextTrack() {
+      currentTrack = (currentTrack + 1) % tracks.length;
+      playTrack(currentTrack);
+    }
+
+    function prevTrack() {
+      currentTrack = (currentTrack - 1 + tracks.length) % tracks.length;
+      playTrack(currentTrack);
+    }
+
+    async function loadAllTracks() {
+      let pageToken = '', allFiles = [];
+      try {
+        do {
+          const query = encodeURIComponent(`'${folderId}' in parents and (mimeType contains 'audio')`);
+          const url = `https://www.googleapis.com/drive/v3/files?q=${query}&fields=files(id,name),nextPageToken&pageSize=100&key=${apiKey}${pageToken ? `&pageToken=${pageToken}` : ''}`;
+          const res = await fetch(url);
+          const data = await res.json();
+          if (data.files) allFiles = allFiles.concat(data.files);
+          pageToken = data.nextPageToken;
+        } while (pageToken);
+        allFiles.sort((a, b) => a.name.localeCompare(b.name));
+        tracks = allFiles;
+        renderTracks();
+      } catch (err) {
+        console.error(err);
+      }
+    }
+  </script>
 </body>
 </html>
